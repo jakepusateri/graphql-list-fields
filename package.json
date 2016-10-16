@@ -1,7 +1,7 @@
 {
   "name": "graphql-list-fields",
   "version": "1.0.0",
-  "description": "",
+  "description": "Get a list of fields while resolving a GraphQL query",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -18,6 +18,9 @@
     "url": "https://github.com/jakepusateri/graphql-list-fields/issues"
   },
   "homepage": "https://github.com/jakepusateri/graphql-list-fields#readme",
+  "keywords": [
+      "ast", "schema", "fields", "graphqlresolveinfo", "graphql-js", "graphql"
+  ],
   "devDependencies": {
     "graphql": "^0.7.2",
     "jest": "^16.0.1"
