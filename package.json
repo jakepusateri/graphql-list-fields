@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "coverage": "jest --coverage",
+    "test-ci": "npm run coverage && cat ./coverage/lcov.info | coveralls",
     "test-watch": "jest --watch"
   },
   "repository": {
@@ -19,9 +20,15 @@
   },
   "homepage": "https://github.com/jakepusateri/graphql-list-fields#readme",
   "keywords": [
-      "ast", "schema", "fields", "graphqlresolveinfo", "graphql-js", "graphql"
+    "ast",
+    "schema",
+    "fields",
+    "graphqlresolveinfo",
+    "graphql-js",
+    "graphql"
   ],
   "devDependencies": {
+    "coveralls": "^2.11.14",
     "graphql": "^0.7.2",
     "jest": "^16.0.1"
   }
