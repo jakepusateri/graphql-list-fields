@@ -1,4 +1,6 @@
 # graphql-list-fields
+[![Build Status](https://travis-ci.org/jakepusateri/graphql-list-fields.svg?branch=master)](https://travis-ci.org/jakepusateri/graphql-list-fields)
+[![npm version](https://badge.fury.io/js/graphql-list-fields.svg)](https://badge.fury.io/js/graphql-list-fields)
 
 When implementing a GraphQL server, it can be useful to know the list of fields being queried on
 a given type. This module takes a GraphQLResolveInfo object and returns a list of fields.
