@@ -24,7 +24,7 @@ function isExcludedByDirective(context, ast) {
     return isExcluded;
 }
 
-function getFieldSet(context, asts = context.fieldASTs) {
+function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes) {
     // for recursion: fragments doesn't have many sets
     if (!Array.isArray(asts)) {
         asts = [asts];
@@ -46,11 +46,11 @@ function getFieldSet(context, asts = context.fieldASTs) {
             case 'InlineFragment':
                 return Object.assign({}, set, getFieldSet(context, ast));
             case 'FragmentSpread':
-                return Object.assign({}, set, getFieldSet(context, context.fragments[ast.name.value])); 
+                return Object.assign({}, set, getFieldSet(context, context.fragments[ast.name.value]));
         }
     }, {});
 }
 
 module.exports = function getFieldList(context) {
     return Object.keys(getFieldSet(context));
-}
+};
