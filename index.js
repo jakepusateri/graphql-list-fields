@@ -24,7 +24,11 @@ function isExcludedByDirective(context, ast) {
     return isExcluded;
 }
 
-function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes) {
+function dotConcat(a, b) {
+    return a ? `${a}.${b}` : b;
+}
+
+function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes, prefix = '') {
     // for recursion: fragments doesn't have many sets
     if (!Array.isArray(asts)) {
         asts = [asts];
@@ -41,12 +45,17 @@ function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes) {
         }
         switch (ast.kind) {
             case 'Field':
-                set[ast.name.value] = true;
-                return set;
+                const newPrefix = dotConcat(prefix, ast.name.value);
+                if (ast.selectionSet) {
+                    return Object.assign({}, set, getFieldSet(context, ast, newPrefix));
+                } else {
+                    set[newPrefix] = true;
+                    return set;
+                }
             case 'InlineFragment':
-                return Object.assign({}, set, getFieldSet(context, ast));
+                return Object.assign({}, set, getFieldSet(context, ast, prefix));
             case 'FragmentSpread':
-                return Object.assign({}, set, getFieldSet(context, context.fragments[ast.name.value]));
+                return Object.assign({}, set, getFieldSet(context, context.fragments[ast.name.value], prefix));
         }
     }, {});
 }

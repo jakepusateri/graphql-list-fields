@@ -11,6 +11,7 @@ Supported features
 - Fragments
 - Inline Fragments
 - `@skip` and `@include` directives
+- Nested fields into dot.notation
 
 ```
 npm install --save graphql-list-fields
