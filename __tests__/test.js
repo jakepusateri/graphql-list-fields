@@ -18,7 +18,9 @@ function testGetFields(query, expected, variables) {
                         name: 'SomeType',
                         fields: {
                             a: { type: GraphQLString },
-                            b: { type: GraphQLString }
+                            b: { type: GraphQLString },
+                            c: { type: GraphQLString },
+                            d: { type: GraphQLString }
                         },
                     }),
                     resolve: resolverSpy
@@ -151,4 +153,21 @@ it('@skip variable true', () => {
         } 
     }
     `, [], { test: true });
+});
+
+it('nested fragments', () => {
+    return testGetFields(`
+    {
+        someType {
+            ...L1
+        }
+    }
+    fragment L1 on SomeType {
+        a
+        ...L2
+    }
+    fragment L2 on SomeType {
+        b
+    }
+    `, ['a', 'b']);
 });
