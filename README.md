@@ -18,11 +18,11 @@ npm install --save graphql-list-fields
 
 ## Usage
 ```javascript
-import getFieldNames from 'graphql-list-fields';
+import getFieldList from 'graphql-list-fields';
 
 // in some resolve function
 resolve(parent, args, context, info) {
-    const fields = getFieldNames(info);
+    const fields = getFieldList(info);
     return fetch('/someservice/?fields=' + fields.join(','));
 }
 ```
