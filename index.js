@@ -11,16 +11,18 @@ function getBooleanArgumentValue(context, ast) {
 function isExcludedByDirective(context, ast) {
     const directives = ast.directives;
     let isExcluded = false;
-    directives.forEach((directive) => {
-        switch (directive.name.value) {
-            case 'include':
-                isExcluded = isExcluded || !getBooleanArgumentValue(context, directive);
-                break;
-            case 'skip':
-                isExcluded = isExcluded || getBooleanArgumentValue(context, directive);
-                break;
-        }
-    });
+    if(directives) {
+        directives.forEach((directive) => {
+            switch (directive.name.value) {
+                case 'include':
+                    isExcluded = isExcluded || !getBooleanArgumentValue(context, directive);
+                    break;
+                case 'skip':
+                    isExcluded = isExcluded || getBooleanArgumentValue(context, directive);
+                    break;
+            }
+        });
+    }
     return isExcluded;
 }
 
