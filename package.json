@@ -30,7 +30,8 @@
   "devDependencies": {
     "coveralls": "^2.11.14",
     "graphql": "^0.8.1",
-    "jest": "^16.0.1"
+    "jest": "^16.0.1",
+    "graphql-relay": "^0.5.2"
   },
   "files": []
 }

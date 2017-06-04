@@ -24,7 +24,11 @@ function isExcludedByDirective(context, ast) {
     return isExcluded;
 }
 
-function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes) {
+function getFieldSet(
+      context,
+      asts = context.fieldASTs || context.fieldNodes,
+      exclude = ['cursor']
+) {
     // for recursion: fragments doesn't have many sets
     if (!Array.isArray(asts)) {
         asts = [asts];
@@ -39,8 +43,17 @@ function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes) {
         if (isExcludedByDirective(context, ast)) {
             return set;
         }
+
         switch (ast.kind) {
             case 'Field':
+                if (ast.selectionSet) {
+                    return Object.assign({}, set, getFieldSet(context, ast));
+                }
+
+                if (exclude.includes(ast.name.value)) {
+                    return set;
+                }
+
                 set[ast.name.value] = true;
                 return set;
             case 'InlineFragment':
