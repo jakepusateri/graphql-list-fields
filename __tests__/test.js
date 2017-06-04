@@ -1,141 +1,159 @@
-const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType, buildSchema } = require('graphql');
+const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType } = require('graphql');
+const { connectionDefinitions } = require('graphql-relay');
 const getFieldList = require('../');
-const { Parser, Printer } = require('graphql/language');
 
 function testGetFields(query, expected, variables) {
-    return Promise.resolve().then(() => {    
-        let actual;
-        function resolver(parent, args, context, info) {
-            actual = getFieldList(info);
-            return { a: 1, b: 2 };
-        }
-        const resolverSpy = jest.fn(resolver);
-        const QueryType = new GraphQLObjectType({
-            name: 'Query',
-            fields: {
-                someType: {
-                    type: new GraphQLObjectType({
-                        name: 'SomeType',
-                        fields: {
-                            a: { type: GraphQLString },
-                            b: { type: GraphQLString },
-                            c: { type: GraphQLString },
-                            d: { type: GraphQLString }
-                        },
-                    }),
-                    resolve: resolverSpy
-                }
-            },
-        });
-        const schema =  new GraphQLSchema({
-            query: QueryType,
-        });
+  return Promise.resolve().then(() => {
+    let actual;
 
-        const result = graphql(schema, query, undefined, undefined, variables).then(() => {
-            expect(actual).toEqual(expected);
-            expect(resolverSpy).toHaveBeenCalled();
-        });
-        return result;
+    function resolver(parent, args, context, info) {
+      actual = getFieldList(info);
+      return { a: 1, b: 2 };
+    }
+    const resolverSpy = jest.fn(resolver);
+    const nodeType = new GraphQLObjectType({
+      name: 'SomeType',
+      fields: {
+        a: { type: GraphQLString },
+        b: { type: GraphQLString },
+        c: { type: GraphQLString },
+        d: { type: GraphQLString }
+      },
     });
+
+    const {
+      connectionType,
+    } = connectionDefinitions({
+      nodeType: nodeType,
+      name: 'SomeConnectionType',
+    });
+
+    const QueryType = new GraphQLObjectType({
+      name: 'Query',
+      fields: {
+        someType: {
+          type: nodeType,
+          resolve: resolverSpy,
+        },
+        someConnectionType: {
+          type: connectionType,
+          resolve: resolverSpy,
+        },
+      },
+    });
+
+    const schema =  new GraphQLSchema({
+      query: QueryType,
+    });
+
+    const result = graphql(schema, query, undefined, undefined, variables).then((aa) => {
+      expect(actual).toEqual(expected);
+      expect(resolverSpy).toHaveBeenCalled();
+    });
+    return result;
+  });
 }
 
-it('basic query', () => {
-    return testGetFields('{ someType { a b } }', ['a', 'b']);
-});
+const wrapAsConnection = (query, fragment) => {
+    return fragment + `{ someConnectionType { edges ${query.replace('someType', 'cursor, node')} } }`
+};
 
-it('fragment', () => {
-    return testGetFields(`
-    fragment Frag on SomeType {
-        a
-    }
+
+const testTypes = (description, query, expected, fragment = '') => {
+    [fragment + query, wrapAsConnection(query, fragment)].forEach((q, i) => {
+        it(`${i === 1 ? 'connections ' : ''}${description}`, () => {
+            return testGetFields(q, expected);
+        });
+    });
+};
+
+testTypes('basic query', '{ someType { a b } }', ['a', 'b']);
+
+testTypes(
+    'fragment',
+    `
     { someType { ...Frag } }
-    `, ['a']);
-});
-it('inline fragment', () => {
-    return testGetFields(`
-    { someType { ...on SomeType { a } } }
-    `, ['a']);
-});
+    `,
+     ['a'],
+    `fragment Frag on SomeType { a }`
+);
 
-it('@include false', () => {
-    return testGetFields(`
-    { 
-        someType {
-            a
-            b @include(if: false) 
-        } 
-    }
-    `, ['a']);
-});
+testTypes(
+    'inline fragment',
+    '{ someType { ...on SomeType { a } } }',
+    ['a'],
+);
 
-it('@include true', () => {
-    return testGetFields(`
-    { 
-        someType {
-            a
-            b @include(if: true) 
-        } 
-    }
-    `, ['a', 'b']);
-});
+testTypes(
+    '@includes false',
+    `{someType { a b @include(if: false) } }`,
+    ['a']
+);
 
-it('@skip false', () => {
-    return testGetFields(`
-    { 
-        someType {
-            a
-            b @skip(if: false) 
-        } 
-    }
-    `, ['a', 'b']);
-});
+testTypes(
+    '@includes true',
+    `{someType { a b @include(if: true) } }`,
+    ['a', 'b']
+);
 
-it('@skip true', () => {
-    return testGetFields(`
-    { 
+testTypes(
+    '@skip false',
+    `{someType { a b @skip(if: false) } }`,
+    ['a', 'b']
+);
+
+testTypes(
+    '@skip true',
+    `{someType { a b @skip(if: true) } }`,
+    ['a']
+);
+
+testTypes(
+    '@include false @skip false',
+    `{someType {  b @include(if: false) @skip(if: false)  } }`,
+    []
+);
+
+testTypes(
+    '@include false @skip true',
+    `{someType {  b @include(if: false) @skip(if: true)  } }`,
+    []
+);
+
+testTypes(
+    '@include true @skip false',
+    `{someType {  b @include(if: true) @skip(if: false)  } }`,
+    ['b']
+);
+
+testTypes(
+    '@include true @skip true',
+    `{someType {  b @include(if: true) @skip(if: true)  } }`,
+    []
+);
+
+testTypes(
+    'nested fragments',
+    `
+    {
         someType {
-            a
-            b @skip(if: true) 
-        } 
+            ...L1
+        }
     }
-    `, ['a']);
-});
-it('@include false @skip false', () => {
-    return testGetFields(`
-    { 
-        someType {
-            b @include(if: false) @skip(if: false)  
-        } 
+    `,
+    ['a', 'b'],
+    `
+    fragment L1 on SomeType {
+        a
+        ...L2
     }
-    `, []);
-});
-it('@include false @skip true', () => {
-    return testGetFields(`
-    { 
-        someType {
-            b @include(if: false) @skip(if: true)  
-        } 
+    fragment L2 on SomeType {
+        b
     }
-    `, []);
-});
-it('@include true @skip false', () => {
-    return testGetFields(`
-    { 
-        someType {
-            b @include(if: true) @skip(if: false)  
-        } 
-    }
-    `, ['b']);
-});
-it('@include true @skip true', () => {
-    return testGetFields(`
-    { 
-        someType {
-            b @include(if: true) @skip(if: true)  
-        } 
-    }
-    `, []);
-});
+    `
+);
+
+
 it('@include variable false', () => {
     return testGetFields(`
     query($test: Boolean!){ 
@@ -145,6 +163,23 @@ it('@include variable false', () => {
     }
     `, [], { test: false });
 });
+
+it('connections @include variable false', () => {
+  return testGetFields(`
+    query($test: Boolean!){
+        someConnectionType {
+            edges {
+                cursor
+                node {
+                    b @include(if: $test)  
+                }
+            }
+        }
+    }
+    `, [], { test: false });
+});
+
+
 it('@skip variable true', () => {
     return testGetFields(`
     query($test: Boolean!){ 
@@ -155,19 +190,17 @@ it('@skip variable true', () => {
     `, [], { test: true });
 });
 
-it('nested fragments', () => {
-    return testGetFields(`
-    {
-        someType {
-            ...L1
+it('connections @skip variable true', () => {
+  return testGetFields(`
+    query($test: Boolean!){
+        someConnectionType {
+            edges {
+                cursor
+                node {
+                    b @skip(if: $test)  
+                }
+            }
         }
     }
-    fragment L1 on SomeType {
-        a
-        ...L2
-    }
-    fragment L2 on SomeType {
-        b
-    }
-    `, ['a', 'b']);
+    `, [], { test: true });
 });
