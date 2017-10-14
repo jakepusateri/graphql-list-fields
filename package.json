@@ -28,9 +28,9 @@
     "graphql"
   ],
   "devDependencies": {
-    "coveralls": "^2.11.14",
-    "graphql": "^0.9.0",
-    "jest": "^18.1.0"
-  }
+    "coveralls": "^3.0.0",
+    "graphql": "^0.11.7",
+    "jest": "^21.2.1"
+  },
   "files": []
 }
