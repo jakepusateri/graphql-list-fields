@@ -7,9 +7,16 @@ function testGetFields(query, expected, variables) {
         let actual;
         function resolver(parent, args, context, info) {
             actual = getFieldList(info);
-            return { a: 1, b: 2 };
+            return { a: 1, b: 2, c: 3, d: 4, e: { a: 5 } };
         }
         const resolverSpy = jest.fn(resolver);
+        const EType = new GraphQLObjectType({
+            name: 'NestedType',
+            fields: () => ({
+                x: { type: GraphQLString },
+                e: { type: EType }
+            })
+        });
         const QueryType = new GraphQLObjectType({
             name: 'Query',
             fields: {
@@ -20,7 +27,8 @@ function testGetFields(query, expected, variables) {
                             a: { type: GraphQLString },
                             b: { type: GraphQLString },
                             c: { type: GraphQLString },
-                            d: { type: GraphQLString }
+                            d: { type: GraphQLString },
+                            e: { type: EType }
                         },
                     }),
                     resolve: resolverSpy
@@ -170,4 +178,89 @@ it('nested fragments', () => {
         b
     }
     `, ['a', 'b']);
+});
+
+it('works with nested types', () => {
+    return testGetFields(`
+    {
+        someType {
+            a
+            b
+            e {
+                x
+            }
+        }
+    }
+    `, ['a', 'b', 'e.x']);
+});
+
+it('works with doubly nested types', () => {
+    return testGetFields(`
+    {
+        someType {
+            a
+            b
+            e {
+                e {
+                    x
+                }
+            }
+        }
+    }
+    `, ['a', 'b', 'e.e.x']);
+});
+
+it('works with nested types and fragments', () => {
+    return testGetFields(`
+    {
+        someType {
+            a
+            b
+            e {
+                ...F1
+            }
+        }
+    }
+    fragment F1 on NestedType {
+        x
+    }
+    `, ['a', 'b', 'e.x']);
+});
+
+it('works with nested types and inline fragments', () => {
+    return testGetFields(`
+    {
+        someType {
+            a
+            b
+            e {
+                ... on NestedType {
+                    x
+                }
+            }
+        }
+    }
+    `, ['a', 'b', 'e.x']);
+});
+
+it('works with super duper nested types', () => {
+    return testGetFields(`
+    {
+        someType {
+            a
+            b
+            e {
+                e {
+                    e {
+                        e {
+                            e {
+                                x
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    `, ['a', 'b', 'e.e.e.e.e.x']);
 });
