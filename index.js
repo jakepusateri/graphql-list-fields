@@ -35,7 +35,9 @@ function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes, pr
     }
 
     const selections = asts.reduce((selections, source) => {
-        selections.push(...source.selectionSet.selections);
+        if (source && source.selectionSet && source.selectionSet.selections) {
+            selections.push(...source.selectionSet.selections);
+        }
         return selections;
     }, []);
 
