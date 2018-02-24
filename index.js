@@ -1,23 +1,23 @@
-function getBooleanArgumentValue(context, ast) {
+function getBooleanArgumentValue(info, ast) {
     const argument = ast.arguments[0].value;
     switch (argument.kind) {
         case 'BooleanValue':
             return argument.value;
         case 'Variable':
-            return context.variableValues[argument.name.value];
+            return info.variableValues[argument.name.value];
     }
 }
 
-function isExcludedByDirective(context, ast) {
+function isExcludedByDirective(info, ast) {
     const directives = ast.directives;
     let isExcluded = false;
     directives.forEach((directive) => {
         switch (directive.name.value) {
             case 'include':
-                isExcluded = isExcluded || !getBooleanArgumentValue(context, directive);
+                isExcluded = isExcluded || !getBooleanArgumentValue(info, directive);
                 break;
             case 'skip':
-                isExcluded = isExcluded || getBooleanArgumentValue(context, directive);
+                isExcluded = isExcluded || getBooleanArgumentValue(info, directive);
                 break;
         }
     });
@@ -28,7 +28,7 @@ function dotConcat(a, b) {
     return a ? `${a}.${b}` : b;
 }
 
-function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes, prefix = '') {
+function getFieldSet(info, asts = info.fieldASTs || info.fieldNodes, prefix = '') {
     // for recursion: fragments doesn't have many sets
     if (!Array.isArray(asts)) {
         asts = [asts];
@@ -42,26 +42,26 @@ function getFieldSet(context, asts = context.fieldASTs || context.fieldNodes, pr
     }, []);
 
     return selections.reduce((set, ast) => {
-        if (isExcludedByDirective(context, ast)) {
+        if (isExcludedByDirective(info, ast)) {
             return set;
         }
         switch (ast.kind) {
             case 'Field':
                 const newPrefix = dotConcat(prefix, ast.name.value);
                 if (ast.selectionSet) {
-                    return Object.assign({}, set, getFieldSet(context, ast, newPrefix));
+                    return Object.assign({}, set, getFieldSet(info, ast, newPrefix));
                 } else {
                     set[newPrefix] = true;
                     return set;
                 }
             case 'InlineFragment':
-                return Object.assign({}, set, getFieldSet(context, ast, prefix));
+                return Object.assign({}, set, getFieldSet(info, ast, prefix));
             case 'FragmentSpread':
-                return Object.assign({}, set, getFieldSet(context, context.fragments[ast.name.value], prefix));
+                return Object.assign({}, set, getFieldSet(info, info.fragments[ast.name.value], prefix));
         }
     }, {});
 }
 
-module.exports = function getFieldList(context) {
-    return Object.keys(getFieldSet(context));
+module.exports = function getFieldList(info) {
+    return Object.keys(getFieldSet(info));
 };
