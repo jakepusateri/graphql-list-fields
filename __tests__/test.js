@@ -2,16 +2,11 @@ const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType, buildSchema } 
 const getFieldList = require('../');
 const { Parser, Printer } = require('graphql/language');
 
-function testGetFields(query, expected, variables, getFieldsForSubfield) {
+function testGetFields(query, expected, variables) {
     return Promise.resolve().then(() => {    
         let actual;
         function resolver(parent, args, context, info) {
-            if (getFieldsForSubfield) {
-                actual = getFieldList(info.fieldNodes[0]);
-            }
-            else {
-                actual = getFieldList(info);
-            }
+            actual = getFieldList(info);
             return { a: 1, b: 2, c: 3, d: 4, e: { a: 5 } };
         }
         const resolverSpy = jest.fn(resolver);
@@ -25,6 +20,10 @@ function testGetFields(query, expected, variables, getFieldsForSubfield) {
         const QueryType = new GraphQLObjectType({
             name: 'Query',
             fields: {
+                scalarField: {
+                    type: GraphQLString, 
+                    resolve: resolverSpy
+                },
                 someType: {
                     type: new GraphQLObjectType({
                         name: 'SomeType',
@@ -57,7 +56,7 @@ it('basic query', () => {
 });
 
 it('get fields on scalar field', () => {
-    return testGetFields('{ someType { a } }', [], {}, true);
+    return testGetFields('{ scalarField }', []);
 });
 
 it('fragment', () => {
