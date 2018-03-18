@@ -3,7 +3,7 @@ const getFieldList = require('../');
 const { Parser, Printer } = require('graphql/language');
 
 function testGetFields(query, expected, variables) {
-    return Promise.resolve().then(() => {    
+    return Promise.resolve().then(() => {
         let actual;
         function resolver(parent, args, context, info) {
             actual = getFieldList(info);
@@ -21,7 +21,7 @@ function testGetFields(query, expected, variables) {
             name: 'Query',
             fields: {
                 scalarField: {
-                    type: GraphQLString, 
+                    type: GraphQLString,
                     resolve: resolverSpy
                 },
                 someType: {
@@ -33,14 +33,14 @@ function testGetFields(query, expected, variables) {
                             c: { type: GraphQLString },
                             d: { type: GraphQLString },
                             e: { type: EType }
-                        },
+                        }
                     }),
                     resolve: resolverSpy
                 }
-            },
+            }
         });
-        const schema =  new GraphQLSchema({
-            query: QueryType,
+        const schema = new GraphQLSchema({
+            query: QueryType
         });
 
         const result = graphql(schema, query, undefined, undefined, variables).then(() => {
@@ -60,120 +60,159 @@ it('get fields on scalar field', () => {
 });
 
 it('fragment', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     fragment Frag on SomeType {
         a
     }
     { someType { ...Frag } }
-    `, ['a']);
+    `,
+        ['a']
+    );
 });
 
 it('inline fragment', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { someType { ...on SomeType { a } } }
-    `, ['a']);
+    `,
+        ['a']
+    );
 });
 
 it('@include false', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             a
             b @include(if: false) 
         } 
     }
-    `, ['a']);
+    `,
+        ['a']
+    );
 });
 
 it('@include true', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             a
             b @include(if: true) 
         } 
     }
-    `, ['a', 'b']);
+    `,
+        ['a', 'b']
+    );
 });
 
 it('@skip false', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             a
             b @skip(if: false) 
         } 
     }
-    `, ['a', 'b']);
+    `,
+        ['a', 'b']
+    );
 });
 
 it('@skip true', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             a
             b @skip(if: true) 
         } 
     }
-    `, ['a']);
+    `,
+        ['a']
+    );
 });
 it('@include false @skip false', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             b @include(if: false) @skip(if: false)  
         } 
     }
-    `, []);
+    `,
+        []
+    );
 });
 it('@include false @skip true', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             b @include(if: false) @skip(if: true)  
         } 
     }
-    `, []);
+    `,
+        []
+    );
 });
 it('@include true @skip false', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             b @include(if: true) @skip(if: false)  
         } 
     }
-    `, ['b']);
+    `,
+        ['b']
+    );
 });
 it('@include true @skip true', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     { 
         someType {
             b @include(if: true) @skip(if: true)  
         } 
     }
-    `, []);
+    `,
+        []
+    );
 });
 it('@include variable false', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     query($test: Boolean!){ 
         someType {
             b @include(if: $test)  
         } 
     }
-    `, [], { test: false });
+    `,
+        [],
+        { test: false }
+    );
 });
 it('@skip variable true', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     query($test: Boolean!){ 
         someType {
             b @skip(if: $test)  
         } 
     }
-    `, [], { test: true });
+    `,
+        [],
+        { test: true }
+    );
 });
 
 it('nested fragments', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             ...L1
@@ -186,11 +225,14 @@ it('nested fragments', () => {
     fragment L2 on SomeType {
         b
     }
-    `, ['a', 'b']);
+    `,
+        ['a', 'b']
+    );
 });
 
 it('works with nested types', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             a
@@ -200,11 +242,14 @@ it('works with nested types', () => {
             }
         }
     }
-    `, ['a', 'b', 'e.x']);
+    `,
+        ['a', 'b', 'e.x']
+    );
 });
 
 it('works with doubly nested types', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             a
@@ -216,11 +261,14 @@ it('works with doubly nested types', () => {
             }
         }
     }
-    `, ['a', 'b', 'e.e.x']);
+    `,
+        ['a', 'b', 'e.e.x']
+    );
 });
 
 it('works with nested types and fragments', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             a
@@ -233,11 +281,14 @@ it('works with nested types and fragments', () => {
     fragment F1 on NestedType {
         x
     }
-    `, ['a', 'b', 'e.x']);
+    `,
+        ['a', 'b', 'e.x']
+    );
 });
 
 it('works with nested types and inline fragments', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             a
@@ -249,11 +300,14 @@ it('works with nested types and inline fragments', () => {
             }
         }
     }
-    `, ['a', 'b', 'e.x']);
+    `,
+        ['a', 'b', 'e.x']
+    );
 });
 
 it('works with super duper nested types', () => {
-    return testGetFields(`
+    return testGetFields(
+        `
     {
         someType {
             a
@@ -271,5 +325,90 @@ it('works with super duper nested types', () => {
             }
         }
     }
-    `, ['a', 'b', 'e.e.e.e.e.x']);
+    `,
+        ['a', 'b', 'e.e.e.e.e.x']
+    );
+});
+
+it('handles undefined directives', () => {
+    // Relevant ast info bits included
+    const info = {
+        fieldName: 'someType',
+        fieldNodes: [
+            {
+                kind: 'Field',
+                alias: null,
+                name: {
+                    kind: 'Name',
+                    value: 'someType',
+                    loc: {
+                        start: 2,
+                        end: 10
+                    }
+                },
+                arguments: [],
+                directives: [],
+                selectionSet: {
+                    kind: 'SelectionSet',
+                    selections: [
+                        {
+                            kind: 'Field',
+                            alias: null,
+                            name: {
+                                kind: 'Name',
+                                value: 'a',
+                                loc: {
+                                    start: 13,
+                                    end: 14
+                                }
+                            },
+                            arguments: [],
+                            // deliberately excluded for test "directives": [],
+                            selectionSet: null,
+                            loc: {
+                                start: 13,
+                                end: 14
+                            }
+                        },
+                        {
+                            kind: 'Field',
+                            alias: null,
+                            name: {
+                                kind: 'Name',
+                                value: 'b',
+                                loc: {
+                                    start: 15,
+                                    end: 16
+                                }
+                            },
+                            arguments: [],
+                            directives: [],
+                            selectionSet: null,
+                            loc: {
+                                start: 15,
+                                end: 16
+                            }
+                        }
+                    ],
+                    loc: {
+                        start: 11,
+                        end: 18
+                    }
+                },
+                loc: {
+                    start: 2,
+                    end: 18
+                }
+            }
+        ],
+        returnType: 'SomeType',
+        parentType: 'Query',
+        path: {
+            key: 'someType'
+        },
+        fragments: {},
+        variableValues: {}
+    };
+
+    expect(getFieldList(info)).toEqual(['a', 'b']);
 });

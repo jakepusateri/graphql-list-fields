@@ -4,10 +4,10 @@
   "description": "Get a list of fields while resolving a GraphQL query",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "coverage": "jest --coverage",
-    "test-ci": "npm run coverage && cat ./coverage/lcov.info | coveralls",
-    "test-watch": "jest --watch"
+    "test": "jest --coverage",
+    "test-ci": "npm run test && cat ./coverage/lcov.info | coveralls",
+    "test-watch": "jest --watch",
+    "prettier": "prettier __tests__/*.js *.js --write --tab-width 4 --single-quote --print-width 120"
   },
   "repository": {
     "type": "git",
@@ -30,7 +30,8 @@
   "devDependencies": {
     "coveralls": "^3.0.0",
     "graphql": "^0.11.7",
-    "jest": "^21.2.1"
+    "jest": "^21.2.1",
+    "prettier": "^1.11.1"
   },
   "files": []
 }

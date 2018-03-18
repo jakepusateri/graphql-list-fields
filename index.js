@@ -11,7 +11,7 @@ function getBooleanArgumentValue(info, ast) {
 function isExcludedByDirective(info, ast) {
     const directives = ast.directives || [];
     let isExcluded = false;
-    directives.forEach((directive) => {
+    directives.forEach(directive => {
         switch (directive.name.value) {
             case 'include':
                 isExcluded = isExcluded || !getBooleanArgumentValue(info, directive);
