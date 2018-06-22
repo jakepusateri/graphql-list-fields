@@ -2,11 +2,11 @@ const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType, buildSchema } 
 const getFieldList = require('../');
 const { Parser, Printer } = require('graphql/language');
 
-function testGetFields(query, expected, variables) {
+function testGetFields(query, expected, variables, namedInlineFragments = false) {
     return Promise.resolve().then(() => {
         let actual;
         function resolver(parent, args, context, info) {
-            actual = getFieldList(info);
+            actual = getFieldList(info, namedInlineFragments);
             return { a: 1, b: 2, c: 3, d: 4, e: { a: 5 } };
         }
         const resolverSpy = jest.fn(resolver);
@@ -302,6 +302,27 @@ it('works with nested types and inline fragments', () => {
     }
     `,
         ['a', 'b', 'e.x']
+    );
+});
+
+it('namedInlineFragments works with nested types and inline fragments', () => {
+    return testGetFields(
+        `
+    {
+        someType {
+            a
+            b
+            e {
+                ... on NestedType {
+                    x
+                }
+            }
+        }
+    }
+    `,
+        ['a', 'b', 'e.NestedType.x'],
+        undefined,
+        true
     );
 });
 

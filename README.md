@@ -27,3 +27,18 @@ resolve(parent, args, context, info) {
     return fetch('/someservice/?fields=' + fields.join(','));
 }
 ```
+
+### named inline fragments
+When supplying `true` as the second argument (`getFieldList(ast, true)`), the type of a spread is included in the path:
+```
+{
+  someType {
+    e {
+      ... on NestedType {
+        x
+      }
+    }
+  }
+}
+```
+results in: `[e.NestedType.x]` instead of `[e.x]`
