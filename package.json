@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --coverage",
-    "test-ci": "npm run test && cat ./coverage/lcov.info | coveralls",
     "test-watch": "jest --watch",
     "prettier": "prettier __tests__/*.js *.js --write --tab-width 4 --single-quote --print-width 120"
   },
@@ -28,7 +27,6 @@
     "graphql"
   ],
   "devDependencies": {
-    "coveralls": "^3.0.0",
     "graphql": "^16.8.1",
     "jest": "^29.7.0",
     "prettier": "^3.2.4"
