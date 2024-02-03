@@ -1,6 +1,6 @@
 {
   "name": "graphql-list-fields",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Get a list of fields while resolving a GraphQL query",
   "main": "index.js",
   "scripts": {
