@@ -1,6 +1,5 @@
-const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType, buildSchema } = require('graphql');
+const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType } = require('graphql');
 const getFieldList = require('../');
-const { Parser, Printer } = require('graphql/language');
 
 function testGetFields(query, expected, variables) {
     return Promise.resolve().then(() => {
@@ -14,15 +13,15 @@ function testGetFields(query, expected, variables) {
             name: 'NestedType',
             fields: () => ({
                 x: { type: GraphQLString },
-                e: { type: EType }
-            })
+                e: { type: EType },
+            }),
         });
         const QueryType = new GraphQLObjectType({
             name: 'Query',
             fields: {
                 scalarField: {
                     type: GraphQLString,
-                    resolve: resolverSpy
+                    resolve: resolverSpy,
                 },
                 someType: {
                     type: new GraphQLObjectType({
@@ -32,18 +31,18 @@ function testGetFields(query, expected, variables) {
                             b: { type: GraphQLString },
                             c: { type: GraphQLString },
                             d: { type: GraphQLString },
-                            e: { type: EType }
-                        }
+                            e: { type: EType },
+                        },
                     }),
-                    resolve: resolverSpy
-                }
-            }
+                    resolve: resolverSpy,
+                },
+            },
         });
         const schema = new GraphQLSchema({
-            query: QueryType
+            query: QueryType,
         });
 
-        const result = graphql(schema, query, undefined, undefined, variables).then(() => {
+        const result = graphql({ schema, source: query, variableValues: variables }).then(() => {
             expect(actual).toEqual(expected);
             expect(resolverSpy).toHaveBeenCalled();
         });
@@ -67,7 +66,7 @@ it('fragment', () => {
     }
     { someType { ...Frag } }
     `,
-        ['a']
+        ['a'],
     );
 });
 
@@ -76,7 +75,7 @@ it('inline fragment', () => {
         `
     { someType { ...on SomeType { a } } }
     `,
-        ['a']
+        ['a'],
     );
 });
 
@@ -90,7 +89,7 @@ it('@include false', () => {
         } 
     }
     `,
-        ['a']
+        ['a'],
     );
 });
 
@@ -104,7 +103,7 @@ it('@include true', () => {
         } 
     }
     `,
-        ['a', 'b']
+        ['a', 'b'],
     );
 });
 
@@ -118,7 +117,7 @@ it('@skip false', () => {
         } 
     }
     `,
-        ['a', 'b']
+        ['a', 'b'],
     );
 });
 
@@ -132,7 +131,7 @@ it('@skip true', () => {
         } 
     }
     `,
-        ['a']
+        ['a'],
     );
 });
 it('@include false @skip false', () => {
@@ -144,7 +143,7 @@ it('@include false @skip false', () => {
         } 
     }
     `,
-        []
+        [],
     );
 });
 it('@include false @skip true', () => {
@@ -156,7 +155,7 @@ it('@include false @skip true', () => {
         } 
     }
     `,
-        []
+        [],
     );
 });
 it('@include true @skip false', () => {
@@ -168,7 +167,7 @@ it('@include true @skip false', () => {
         } 
     }
     `,
-        ['b']
+        ['b'],
     );
 });
 it('@include true @skip true', () => {
@@ -180,7 +179,7 @@ it('@include true @skip true', () => {
         } 
     }
     `,
-        []
+        [],
     );
 });
 it('@include variable false', () => {
@@ -193,7 +192,7 @@ it('@include variable false', () => {
     }
     `,
         [],
-        { test: false }
+        { test: false },
     );
 });
 it('@skip variable true', () => {
@@ -206,7 +205,7 @@ it('@skip variable true', () => {
     }
     `,
         [],
-        { test: true }
+        { test: true },
     );
 });
 
@@ -226,7 +225,7 @@ it('nested fragments', () => {
         b
     }
     `,
-        ['a', 'b']
+        ['a', 'b'],
     );
 });
 
@@ -243,7 +242,7 @@ it('works with nested types', () => {
         }
     }
     `,
-        ['a', 'b', 'e.x']
+        ['a', 'b', 'e.x'],
     );
 });
 
@@ -262,7 +261,7 @@ it('works with doubly nested types', () => {
         }
     }
     `,
-        ['a', 'b', 'e.e.x']
+        ['a', 'b', 'e.e.x'],
     );
 });
 
@@ -282,7 +281,7 @@ it('works with nested types and fragments', () => {
         x
     }
     `,
-        ['a', 'b', 'e.x']
+        ['a', 'b', 'e.x'],
     );
 });
 
@@ -301,7 +300,7 @@ it('works with nested types and inline fragments', () => {
         }
     }
     `,
-        ['a', 'b', 'e.x']
+        ['a', 'b', 'e.x'],
     );
 });
 
@@ -326,7 +325,7 @@ it('works with super duper nested types', () => {
         }
     }
     `,
-        ['a', 'b', 'e.e.e.e.e.x']
+        ['a', 'b', 'e.e.e.e.e.x'],
     );
 });
 
@@ -343,8 +342,8 @@ it('handles undefined directives', () => {
                     value: 'someType',
                     loc: {
                         start: 2,
-                        end: 10
-                    }
+                        end: 10,
+                    },
                 },
                 arguments: [],
                 directives: [],
@@ -359,16 +358,16 @@ it('handles undefined directives', () => {
                                 value: 'a',
                                 loc: {
                                     start: 13,
-                                    end: 14
-                                }
+                                    end: 14,
+                                },
                             },
                             arguments: [],
                             // deliberately excluded for test "directives": [],
                             selectionSet: null,
                             loc: {
                                 start: 13,
-                                end: 14
-                            }
+                                end: 14,
+                            },
                         },
                         {
                             kind: 'Field',
@@ -378,36 +377,36 @@ it('handles undefined directives', () => {
                                 value: 'b',
                                 loc: {
                                     start: 15,
-                                    end: 16
-                                }
+                                    end: 16,
+                                },
                             },
                             arguments: [],
                             directives: [],
                             selectionSet: null,
                             loc: {
                                 start: 15,
-                                end: 16
-                            }
-                        }
+                                end: 16,
+                            },
+                        },
                     ],
                     loc: {
                         start: 11,
-                        end: 18
-                    }
+                        end: 18,
+                    },
                 },
                 loc: {
                     start: 2,
-                    end: 18
-                }
-            }
+                    end: 18,
+                },
+            },
         ],
         returnType: 'SomeType',
         parentType: 'Query',
         path: {
-            key: 'someType'
+            key: 'someType',
         },
         fragments: {},
-        variableValues: {}
+        variableValues: {},
     };
 
     expect(getFieldList(info)).toEqual(['a', 'b']);
