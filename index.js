@@ -62,6 +62,7 @@ function getFieldSet(info, asts = info.fieldASTs || info.fieldNodes, prefix = ''
     }, {});
 }
 
-module.exports = function getFieldList(info) {
-    return Object.keys(getFieldSet(info));
+module.exports = function getFieldList(info, maxDepth = Number.MAX_SAFE_INTEGER) {
+    const fields = Object.keys(getFieldSet(info));
+    return fields.filter(f => f.split('.').length - 1 < maxDepth);
 };
