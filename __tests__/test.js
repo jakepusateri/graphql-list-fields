@@ -1,11 +1,11 @@
 const { graphql, GraphQLSchema, GraphQLString, GraphQLObjectType } = require('graphql');
 const getFieldList = require('../');
 
-function testGetFields(query, expected, variables) {
+function testGetFields(query, expected, variables, maxDepth) {
     return Promise.resolve().then(() => {
         let actual;
         function resolver(parent, args, context, info) {
-            actual = getFieldList(info);
+            actual = getFieldList(info, maxDepth);
             return { a: 1, b: 2, c: 3, d: 4, e: { a: 5 } };
         }
         const resolverSpy = jest.fn(resolver);
@@ -410,4 +410,69 @@ it('handles undefined directives', () => {
     };
 
     expect(getFieldList(info)).toEqual(['a', 'b']);
+});
+
+it('works with depth limiting', () => {
+    return testGetFields(
+        `
+    {
+        someType {
+            a
+            b
+            e {
+                x
+                e {
+                    x
+                }
+            }
+        }
+    }
+    `,
+        ['a', 'b'],
+        null,
+        1
+    );
+});
+it('works with depth limiting 2', () => {
+    return testGetFields(
+        `
+    {
+        someType {
+            a
+            b
+            e {
+                x
+                e {
+                    x
+                }
+            }
+        }
+    }
+    `,
+        ['a', 'b', 'e.x'],
+        null,
+        2
+    );
+});
+
+it('works with depth limiting 3', () => {
+    return testGetFields(
+        `
+    {
+        someType {
+            a
+            b
+            e {
+                x
+                e {
+                    x
+                }
+            }
+        }
+    }
+    `,
+        ['a', 'b', 'e.x', 'e.e.x'],
+        null,
+        10
+    );
 });

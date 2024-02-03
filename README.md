@@ -27,3 +27,11 @@ resolve(parent, args, context, info) {
     return fetch('/someservice/?fields=' + fields.join(','));
 }
 ```
+
+### Depth Limiting
+`getFieldNames` also accepts an optional depth argument, for how many levels deep results should be returned.
+
+The following will only return top-level fields:
+```javascript
+const fields = getFieldNames(info, 1);
+```
