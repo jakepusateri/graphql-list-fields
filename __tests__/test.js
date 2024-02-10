@@ -428,7 +428,7 @@ it('works with depth limiting', () => {
         }
     }
     `,
-        ['a', 'b'],
+        ['a', 'b', 'e'],
         null,
         1
     );
@@ -449,7 +449,7 @@ it('works with depth limiting 2', () => {
         }
     }
     `,
-        ['a', 'b', 'e.x'],
+        ['a', 'b', 'e.x', 'e.e'],
         null,
         2
     );

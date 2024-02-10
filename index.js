@@ -28,7 +28,7 @@ function dotConcat(a, b) {
     return a ? `${a}.${b}` : b;
 }
 
-function getFieldSet(info, asts = info.fieldASTs || info.fieldNodes, prefix = '') {
+function getFieldSet(info, asts = info.fieldASTs || info.fieldNodes, prefix = '', maxDepth) {
     // for recursion: fragments doesn't have many sets
     if (!Array.isArray(asts)) {
         asts = [asts];
@@ -48,21 +48,20 @@ function getFieldSet(info, asts = info.fieldASTs || info.fieldNodes, prefix = ''
         switch (ast.kind) {
             case 'Field':
                 const newPrefix = dotConcat(prefix, ast.name.value);
-                if (ast.selectionSet) {
-                    return Object.assign({}, set, getFieldSet(info, ast, newPrefix));
+                if (ast.selectionSet && maxDepth > 1) {
+                    return Object.assign({}, set, getFieldSet(info, ast, newPrefix, maxDepth - 1));
                 } else {
                     set[newPrefix] = true;
                     return set;
                 }
             case 'InlineFragment':
-                return Object.assign({}, set, getFieldSet(info, ast, prefix));
+                return Object.assign({}, set, getFieldSet(info, ast, prefix, maxDepth));
             case 'FragmentSpread':
-                return Object.assign({}, set, getFieldSet(info, info.fragments[ast.name.value], prefix));
+                return Object.assign({}, set, getFieldSet(info, info.fragments[ast.name.value], prefix, maxDepth));
         }
     }, {});
 }
 
 module.exports = function getFieldList(info, maxDepth = Number.MAX_SAFE_INTEGER) {
-    const fields = Object.keys(getFieldSet(info));
-    return fields.filter(f => f.split('.').length - 1 < maxDepth);
+    return Object.keys(getFieldSet(info, undefined, undefined, maxDepth));
 };
