@@ -33,3 +33,6 @@ The following will only return top-level fields:
 ```javascript
 const fields = getFieldNames(info, 1);
 ```
+
+### Future Development
+This package is considered done.
